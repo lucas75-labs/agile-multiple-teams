@@ -1,3 +1,28 @@
+################################################################################
+# Team Issue Routing Workflow
+#
+# Automatically routes issues to team-specific projects when team labels are added
+#
+# SETUP INSTRUCTIONS:
+# 
+# 1. CREATE TEAM LABEL:
+#    - Format: 'team-<shortcode>' (e.g. 'team-abc')
+#    - Create in GitHub: 
+#      Settings → Labels → New label
+#
+# 2. CREATE PROJECT :
+#
+# 3. UPDATE PROJECT MAPPING:
+#    - Edit the TEAM_PROJECT_MAP in the script below
+#    - Format: 'shortcode': 'project_url'
+#    - Example for 'team-xyz':
+#      'xyz': 'https://github.com/orgs/my-org/projects/4'
+#
+# UNMAPPED TEAMS:
+# - Issues get 'triage' label
+# - Add missing mappings to TEAM_PROJECT_MAP
+#
+################################################################################
 name: Assign Issues to Team Projects
 
 on:
@@ -9,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      project: write
 
     steps:
       - name: Handle Team Label
