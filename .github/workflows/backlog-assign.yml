@@ -10,43 +10,47 @@ jobs:
     permissions:
       issues: write
       projects: write
-      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Add to Project
+      - name: Handle Team Label
         uses: actions/github-script@v6
         with:
           script: |
-            const { label, issue } = context.payload;
-            const fs = require('fs').promises;
+            // Configuration - Edit these values
+            const TEAM_PROJECT_MAP = {
+                "abc": "https://github.com/orgs/lucas75-labs/projects/1",
+                "cde": "https://github.com/orgs/lucas75-labs/projects/2",
+                "efg": "https://github.com/orgs/lucas75-labs/projects/3"
+            };
 
-            // Load team-project mappings
-            const configPath = '.github/team-projects.json';
-            const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
+            const { label, issue } = context.payload;
 
             if (!label.name.startsWith('team-')) return;
             
             const teamKey = label.name.split('team-')[1];
-            const projectUrl = config[teamKey];
+            const projectUrl = TEAM_PROJECT_MAP[teamKey];
 
             if (!projectUrl) {
-              core.error(`No project mapping found for team ${teamKey}`);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['triage']
+              });
               return;
             }
 
             // Parse project URL
-            const urlPattern = /github\.com\/(orgs|users)\/([^\/]+)\/projects\/(\d+)/;
-            const match = projectUrl.match(urlPattern);
-            
-            if (!match) {
-              core.error(`Invalid project URL format: ${projectUrl}`);
+            const urlMatch = projectUrl.match(
+              /github\.com\/(orgs|users)\/([^\/]+)\/projects\/(\d+)/
+            );
+
+            if (!urlMatch) {
+              core.error(`Invalid project URL: ${projectUrl}`);
               return;
             }
 
-            const [_, type, owner, projectNumber] = match;
+            const [_, type, owner, projectNumber] = urlMatch;
 
             // Get project ID
             const query = type === 'orgs' ? 
@@ -62,13 +66,13 @@ jobs:
               }`;
 
             const response = await github.graphql(query, {
-              owner: owner,
+              owner,
               number: parseInt(projectNumber)
             });
 
             const projectId = type === 'orgs' ? 
-              response.organization.projectV2.id : 
-              response.user.projectV2.id;
+              response.organization.projectV2?.id : 
+              response.user.projectV2?.id;
 
             if (!projectId) {
               core.error(`Project not found: ${projectUrl}`);
@@ -84,9 +88,6 @@ jobs:
                   }
                 }
               }
-            `, {
-              projectId: projectId,
-              itemId: issue.node_id
-            });
+            `, { projectId, itemId: issue.node_id });
 
             core.notice(`Added issue to project: ${projectUrl}`);
