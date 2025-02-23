@@ -1,0 +1,92 @@
+name: Assign Issues to Team Projects
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  assign-to-project:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      projects: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add to Project
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { label, issue } = context.payload;
+            const fs = require('fs').promises;
+
+            // Load team-project mappings
+            const configPath = '.github/team-projects.json';
+            const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
+
+            if (!label.name.startsWith('team-')) return;
+            
+            const teamKey = label.name.split('team-')[1];
+            const projectUrl = config[teamKey];
+
+            if (!projectUrl) {
+              core.error(`No project mapping found for team ${teamKey}`);
+              return;
+            }
+
+            // Parse project URL
+            const urlPattern = /github\.com\/(orgs|users)\/([^\/]+)\/projects\/(\d+)/;
+            const match = projectUrl.match(urlPattern);
+            
+            if (!match) {
+              core.error(`Invalid project URL format: ${projectUrl}`);
+              return;
+            }
+
+            const [_, type, owner, projectNumber] = match;
+
+            // Get project ID
+            const query = type === 'orgs' ? 
+              `query($owner: String!, $number: Int!) {
+                organization(login: $owner) {
+                  projectV2(number: $number) { id }
+                }
+              }` : 
+              `query($owner: String!, $number: Int!) {
+                user(login: $owner) {
+                  projectV2(number: $number) { id }
+                }
+              }`;
+
+            const response = await github.graphql(query, {
+              owner: owner,
+              number: parseInt(projectNumber)
+            });
+
+            const projectId = type === 'orgs' ? 
+              response.organization.projectV2.id : 
+              response.user.projectV2.id;
+
+            if (!projectId) {
+              core.error(`Project not found: ${projectUrl}`);
+              return;
+            }
+
+            // Add issue to project
+            await github.graphql(`
+              mutation($projectId: ID!, $itemId: ID!) {
+                addProjectV2ItemById(input: {projectId: $projectId, contentId: $itemId}) {
+                  item {
+                    id
+                  }
+                }
+              }
+            `, {
+              projectId: projectId,
+              itemId: issue.node_id
+            });
+
+            core.notice(`Added issue to project: ${projectUrl}`);
