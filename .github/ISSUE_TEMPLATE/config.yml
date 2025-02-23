@@ -1,14 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Discussions
+  - name: Discussões e Debates
     url: https://github.com/lucas75-labs/agile-multiple-teams/discussions
-    about: If you have any questions or need help, please start a discussion.
+    about: Ponto de partida
   - name: Backlog do Time Abc
     url: https://github.com/orgs/lucas75-labs/projects/1
-    about: A
+    about: Acesse aqui para adicionar algo diretamente no backlog do Time Abc.
   - name: Backlog do Time Cde
     url: https://github.com/orgs/lucas75-labs/projects/2
-    about: B
+    about: Aceesse aqui para adicionar algo diretamente no backlog do Time Cde.
   - name: Backlog do Time Efg
     url: https://github.com/orgs/lucas75-labs/projects/3
-    about: C
+    about: Acessse aqui para adicionar algo diretamente no backlog do Time Efg.
