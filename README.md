@@ -2,6 +2,24 @@
 
 Esse projeto foi criado como um experimento para ilustrar como realizar o controle em projetos ágeis.
 
+# ROTEIRO DE APRENDIZADO
+
+* Acesse um projeto na aba projetos. 
+  - Você verá uma visão de planilha que é um backlog.
+* Acesse a aba issues e abra um issue. 
+  - Você verá uma série de templates.
+* Acesse a aba issues e clique em milestones. 
+  - Aqui você poderá criar as sprints e pacotes entregaveis. 
+* Acesse a aba issues e clique em labels. 
+  - Aqui você pode reconfigurar as labels de seu projeto. 
+* Acesse a aba issues e na caixa de filtros adicione Label:question. 
+* Acesse a aba issues e na caixa de filtros adicione Label:question. 
+
+Isso demonstra como você pode criar filtros com facilidade baseado nas labels. Esse recurso é interessante para ter labels como aguarda-po, aguarda-ux, aguarda-arquiteto.
+
+* acesse o diretorio .github/ISSUE_TEMPLATE. 
+  - Aqui você verá os templates usados para abrir os issues
+
 
 # CONFIGURAÇÕES
 
@@ -39,4 +57,5 @@ Dessa forma, sempre que você adicionar "team-abc", o problema será automaticam
 
 # FLUXOS DE TRABALHO SUGERIDOS
 
+À detalhar
 
